@@ -11,30 +11,22 @@ using Newtonsoft.Json.Linq;
 namespace WebApp1.Controllers
 {
     [ApiController]
+    [Route("Account")]
     public class AccountController: ControllerBase
     {
         [HttpGet]
+        [Route("GetToken")]
         public async Task<IActionResult> GetToken()
         {
-            var discoveryClient = await DiscoveryClient.GetAsync("http://localhost:5000");
-            if (discoveryClient.IsError)
+            var client = new HttpClient();
+            var response = await client.RequestClientCredentialsTokenAsync(new ClientCredentialsTokenRequest
             {
-                // Console.WriteLine(discoveryClient.Error);
-                return Ok(discoveryClient.Error);
-            }
- 
-            // request the token from the Auth server
-            var tokenClient = new TokenClient(discoveryClient.TokenEndpoint, "client", "secret");
-            var response = await tokenClient.RequestClientCredentialsAsync("api1");
-            
-            if (response.IsError)
-            {
-                // Console.WriteLine(response.Error);
-                return Ok(response.Error);
-            }
-            
-            // Console.WriteLine(response.Json);
-            return Ok(response.Json);
+                Address = "http://localhost:5000/connect/token",
+                ClientId = "client",
+                ClientSecret = "secret",
+                Scope = "api1"
+            });
+            return Ok(response.AccessToken);
         }
     }
 }
